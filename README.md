@@ -24,8 +24,8 @@ Ensure you have the following installed on your system:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/NickV05/Test-Project.git
-cd Test-Project
+git clone https://github.com/NickV05/LPR-Manager.git
+cd LPR-Manager
 ```
 
 ### 2. Install Dependencies
