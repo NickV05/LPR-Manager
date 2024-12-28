@@ -115,8 +115,11 @@ npm test
 
 Keep Server running, Run end-to-end tests using Playwright:
 
+!Make sure server is running!
+
 ```bash
 cd client
+npx playwright install
 npm run test:e2e
 ```
 
