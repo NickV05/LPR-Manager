@@ -101,15 +101,6 @@ npm run dev
 
 ## Testing
 
-### Client
-
-Run end-to-end tests using Playwright:
-
-```bash
-cd client
-npm run test:e2e
-```
-
 ### Server
 
 Run unit tests with Jest:
@@ -119,3 +110,13 @@ cd server
 npm test
 
 ```
+
+### Client
+
+Keep Server running, Run end-to-end tests using Playwright:
+
+```bash
+cd client
+npm run test:e2e
+```
+
