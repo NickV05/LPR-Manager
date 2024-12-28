@@ -24,8 +24,8 @@ Ensure you have the following installed on your system:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/NickV05/Test-Project.git
-cd Test-Project
+git clone https://github.com/NickV05/LPR-Manager.git
+cd LPR-Manager
 ```
 
 ### 2. Install Dependencies
@@ -72,7 +72,7 @@ To set up a local PostgreSQL database:
 2. Required databases will be intialized on the firts run of the server
 3. Create the `.env` file in the `client` folder with the following configuration:
 ```env
-VITE_SERVER_URL = <your client localhost >, default/suggested is 3000
+VITE_SERVER_URL = <your client localhost >, default/suggested is "http://localhost:3000"
 ````
 
 ---
@@ -101,15 +101,6 @@ npm run dev
 
 ## Testing
 
-### Client
-
-Run end-to-end tests using Playwright:
-
-```bash
-cd client
-npm run test:e2e
-```
-
 ### Server
 
 Run unit tests with Jest:
@@ -119,3 +110,13 @@ cd server
 npm test
 
 ```
+
+### Client
+
+Keep Server running, Run end-to-end tests using Playwright:
+
+```bash
+cd client
+npm run test:e2e
+```
+
