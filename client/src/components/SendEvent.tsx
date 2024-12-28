@@ -47,6 +47,7 @@ const SendEvent: React.FC<SendEventProps> = ({ refetch, setOpenModal }) => {
         `Record created for the License Plate Number: ${response?.data?.event?.plate_number}`
       );
       form.resetFields();
+      refetch();
     } catch (error) {
       if (error instanceof AxiosError) {
         message.error(
@@ -57,7 +58,6 @@ const SendEvent: React.FC<SendEventProps> = ({ refetch, setOpenModal }) => {
       }
     } finally {
       setLoading(false);
-      refetch();
       setOpenModal(false);
     }
   };

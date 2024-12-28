@@ -44,7 +44,7 @@ describe("POST /api/lpr", () => {
     const response = await request(app).post("/api/lpr").send(requestBody);
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Entry for this record already happened.");
+    expect(response.body.error).toBe("Duplicate event detected. Please avoid repeated submissions.");
   });
 
   it("should respond with a 400 status if exit is attempted before entry", async () => {

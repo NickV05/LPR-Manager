@@ -8,10 +8,14 @@ router.post("/lpr", async (req: Request, res: Response) => {
   const { plate_number, event_type, metadata } = req.body;
 
   if (!plate_number || !event_type) {
-    console.log("Missing required fields in request body", { plate_number, event_type });
-     res
+    console.log("Missing required fields in request body", {
+      plate_number,
+      event_type,
+    });
+    res
       .status(400)
       .json({ error: "Plate number and event type are required." });
+      return
   }
 
   const similarPlatesQuery = `
@@ -20,31 +24,31 @@ router.post("/lpr", async (req: Request, res: Response) => {
 `;
 
   try {
-
     const allPlatesResult = await pool.query(similarPlatesQuery);
-    const allPlates = allPlatesResult.rows.map(row => row.plate_number);
-  
+    const allPlates = allPlatesResult.rows.map((row) => row.plate_number);
+
     const matches = allPlates
-      .map(plate => ({
+      .map((plate) => ({
         plate_number: plate,
         similarity: stringSimilarity.compareTwoStrings(plate, plate_number),
       }))
-      .filter(match => match.similarity > 0.8) 
-      .sort((a, b) => b.similarity - a.similarity) 
+      .filter((match) => match.similarity > 0.8)
+      .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 5);
-  
+
     if (matches.length > 0) {
       console.log("Potentially similar plate numbers detected", {
         input: plate_number,
         matches,
       });
     }
-  
+
     const duplicateCheckQuery = `
-      SELECT * FROM lpr_events
-      WHERE plate_number = $1 AND event_type = $2
-        AND event_time >= NOW() - INTERVAL '1 minute';
-    `;
+    SELECT * FROM lpr_events
+    WHERE plate_number = $1 AND event_type = $2
+      AND DATE_TRUNC('minute', event_time) = DATE_TRUNC('minute', NOW());
+  `;
+
     const duplicateCheckResult = await pool.query(duplicateCheckQuery, [
       plate_number,
       event_type,
@@ -52,9 +56,10 @@ router.post("/lpr", async (req: Request, res: Response) => {
 
     if (duplicateCheckResult.rows.length > 0) {
       console.log("Duplicate event detected", { plate_number, event_type });
-       res.status(400).json({
+      res.status(400).json({
         error: "Duplicate event detected. Please avoid repeated submissions.",
       });
+      return
     }
 
     if (event_type === "entry") {
@@ -67,10 +72,13 @@ router.post("/lpr", async (req: Request, res: Response) => {
       ]);
 
       if (entryCheckResult.rows.length > 0) {
-        console.log("Entry already exists for this plate number", { plate_number });
-         res.status(400).json({
+        console.log("Entry already exists for this plate number", {
+          plate_number,
+        });
+        res.status(400).json({
           error: "Entry for this record already happened.",
         });
+        return
       }
 
       const eventQuery = `
@@ -99,10 +107,11 @@ router.post("/lpr", async (req: Request, res: Response) => {
         session: sessionResult.rows[0],
       });
 
-       res.status(201).json({
+      res.status(201).json({
         event: eventResult.rows[0],
         session: sessionResult.rows[0],
       });
+      return
     } else if (event_type === "exit") {
       const checkExitQuery = `
         SELECT * FROM lpr_sessions
@@ -113,10 +122,13 @@ router.post("/lpr", async (req: Request, res: Response) => {
       ]);
 
       if (sessionCheckResult.rows.length === 0) {
-        console.log("Exit cannot be recorded without prior entry", { plate_number });
-         res.status(400).json({
+        console.log("Exit cannot be recorded without prior entry", {
+          plate_number,
+        });
+        res.status(400).json({
           error: "Exit cannot be recorded, entry has to happen first.",
         });
+        return
       }
 
       const eventQuery = `
@@ -146,23 +158,25 @@ router.post("/lpr", async (req: Request, res: Response) => {
           event: eventResult.rows[0],
           session: sessionResult.rows[0],
         });
-         res.status(201).json({
+        res.status(201).json({
           event: eventResult.rows[0],
           session: sessionResult.rows[0],
         });
+        return
       } else {
         console.log("Session not found or already ended", { plate_number });
-         res
-          .status(404)
-          .json({ error: "Session not found or already ended." });
+        res.status(404).json({ error: "Session not found or already ended." });
+        return
       }
     } else {
       console.log("Invalid event type provided", { event_type });
-       res.status(400).json({ error: "Invalid event type." });
+      res.status(400).json({ error: "Invalid event type." });
+      return
     }
   } catch (err) {
     console.log("Error processing event", { error: err });
-     res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
+    return
   }
 });
 
@@ -172,10 +186,12 @@ router.get("/lpr/history", async (_, res: Response) => {
       "SELECT * FROM lpr_events ORDER BY event_time DESC;"
     );
     console.log("Fetched history of LPR events");
-     res.status(200).json(result.rows);
+    res.status(200).json(result.rows);
+    return
   } catch (err) {
     console.log("Error fetching history of LPR events", { error: err });
-     res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
+    return
   }
 });
 

@@ -19,10 +19,14 @@ const router = express_1.default.Router();
 router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { plate_number, event_type, metadata } = req.body;
     if (!plate_number || !event_type) {
-        console.log("Missing required fields in request body", { plate_number, event_type });
+        console.log("Missing required fields in request body", {
+            plate_number,
+            event_type,
+        });
         res
             .status(400)
             .json({ error: "Plate number and event type are required." });
+        return;
     }
     const similarPlatesQuery = `
   SELECT plate_number
@@ -30,13 +34,13 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 `;
     try {
         const allPlatesResult = yield database_1.default.query(similarPlatesQuery);
-        const allPlates = allPlatesResult.rows.map(row => row.plate_number);
+        const allPlates = allPlatesResult.rows.map((row) => row.plate_number);
         const matches = allPlates
-            .map(plate => ({
+            .map((plate) => ({
             plate_number: plate,
             similarity: string_similarity_1.default.compareTwoStrings(plate, plate_number),
         }))
-            .filter(match => match.similarity > 0.8)
+            .filter((match) => match.similarity > 0.8)
             .sort((a, b) => b.similarity - a.similarity)
             .slice(0, 5);
         if (matches.length > 0) {
@@ -46,10 +50,10 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
         }
         const duplicateCheckQuery = `
-      SELECT * FROM lpr_events
-      WHERE plate_number = $1 AND event_type = $2
-        AND event_time >= NOW() - INTERVAL '1 minute';
-    `;
+    SELECT * FROM lpr_events
+    WHERE plate_number = $1 AND event_type = $2
+      AND DATE_TRUNC('minute', event_time) = DATE_TRUNC('minute', NOW());
+  `;
         const duplicateCheckResult = yield database_1.default.query(duplicateCheckQuery, [
             plate_number,
             event_type,
@@ -59,6 +63,7 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             res.status(400).json({
                 error: "Duplicate event detected. Please avoid repeated submissions.",
             });
+            return;
         }
         if (event_type === "entry") {
             const checkEntryQuery = `
@@ -69,10 +74,13 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 plate_number,
             ]);
             if (entryCheckResult.rows.length > 0) {
-                console.log("Entry already exists for this plate number", { plate_number });
+                console.log("Entry already exists for this plate number", {
+                    plate_number,
+                });
                 res.status(400).json({
                     error: "Entry for this record already happened.",
                 });
+                return;
             }
             const eventQuery = `
         INSERT INTO lpr_events (plate_number, event_type, event_time, metadata)
@@ -101,6 +109,7 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 event: eventResult.rows[0],
                 session: sessionResult.rows[0],
             });
+            return;
         }
         else if (event_type === "exit") {
             const checkExitQuery = `
@@ -111,10 +120,13 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 plate_number,
             ]);
             if (sessionCheckResult.rows.length === 0) {
-                console.log("Exit cannot be recorded without prior entry", { plate_number });
+                console.log("Exit cannot be recorded without prior entry", {
+                    plate_number,
+                });
                 res.status(400).json({
                     error: "Exit cannot be recorded, entry has to happen first.",
                 });
+                return;
             }
             const eventQuery = `
         INSERT INTO lpr_events (plate_number, event_type, event_time, metadata)
@@ -145,22 +157,24 @@ router.post("/lpr", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     event: eventResult.rows[0],
                     session: sessionResult.rows[0],
                 });
+                return;
             }
             else {
                 console.log("Session not found or already ended", { plate_number });
-                res
-                    .status(404)
-                    .json({ error: "Session not found or already ended." });
+                res.status(404).json({ error: "Session not found or already ended." });
+                return;
             }
         }
         else {
             console.log("Invalid event type provided", { event_type });
             res.status(400).json({ error: "Invalid event type." });
+            return;
         }
     }
     catch (err) {
         console.log("Error processing event", { error: err });
         res.status(500).json({ error: "Internal Server Error" });
+        return;
     }
 }));
 router.get("/lpr/history", (_, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -168,10 +182,12 @@ router.get("/lpr/history", (_, res) => __awaiter(void 0, void 0, void 0, functio
         const result = yield database_1.default.query("SELECT * FROM lpr_events ORDER BY event_time DESC;");
         console.log("Fetched history of LPR events");
         res.status(200).json(result.rows);
+        return;
     }
     catch (err) {
         console.log("Error fetching history of LPR events", { error: err });
         res.status(500).json({ error: "Internal Server Error" });
+        return;
     }
 }));
 exports.default = router;

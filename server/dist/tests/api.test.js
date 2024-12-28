@@ -41,7 +41,7 @@ describe("POST /api/lpr", () => {
         yield (0, supertest_1.default)(app_1.default).post("/api/lpr").send(requestBody);
         const response = yield (0, supertest_1.default)(app_1.default).post("/api/lpr").send(requestBody);
         expect(response.status).toBe(400);
-        expect(response.body.error).toBe("Entry for this record already happened.");
+        expect(response.body.error).toBe("Duplicate event detected. Please avoid repeated submissions.");
     }));
     it("should respond with a 400 status if exit is attempted before entry", () => __awaiter(void 0, void 0, void 0, function* () {
         const requestBody = {
