@@ -5,8 +5,8 @@
   "scripts": {
     "start": "ts-node ./dist/bin/server.js",
     "build": "tsc",
-    "dev": "concurrently \"tsc --watch\" \"nodemon ./bin/server.ts\"",
-    "test": "concurrently \"ts-node ./bin/server.ts\" \"jest --runInBand\""
+    "dev": "concurrently \"tsc --watch\" \"nodemon ./dist/bin/server.js\"",
+    "test": "concurrently \"ts-node ./dist/bin/server.js\" \"jest --runInBand\""
   },
   "dependencies": {
     "concurrently": "^7.0.0",

@@ -55,12 +55,12 @@ To set up a local PostgreSQL database:
 3. Required databases will be intialized on the firts run of the server
 4. Create the `.env` file in the `server` folder with the following configuration:
    ```env
-   PORT == <your local port number>, default/suggested is 3000
-   DB_HOST ==  <your local port number>, default/suggested is localhost
-   DB_USER ==  <your local USER name>, default/suggested is postgres
-   DB_PORT == <your local DB Port>, default/suggested is  5432
-   DB_PASSWORD == <your local DB password>, default/suggested is  MyPassword05
-   DB_NAME == <your local DB name>, default/suggested is  postgres
+   PORT = <your local port number>, default/suggested is 3000
+   DB_HOST =  <your local port number>, default/suggested is localhost
+   DB_USER =  <your local USER name>, default/suggested is postgres
+   DB_PORT = <your local DB Port>, default/suggested is  5432
+   DB_PASSWORD = <your local DB password>, default/suggested is  MyPassword05
+   DB_NAME = <your local DB name>, default/suggested is  postgres
 
 ````
 
@@ -85,7 +85,7 @@ To start the backend server:
 
 ```bash
 cd server
-npm start
+npm run start
 ```
 
 ### Client
