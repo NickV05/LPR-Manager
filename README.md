@@ -72,7 +72,7 @@ To set up a local PostgreSQL database:
 2. Required databases will be intialized on the firts run of the server
 3. Create the `.env` file in the `client` folder with the following configuration:
 ```env
-VITE_SERVER_URL = <your client localhost >, default/suggested is 3000
+VITE_SERVER_URL = <your client localhost >, default/suggested is "http://localhost:3000"
 ````
 
 ---
